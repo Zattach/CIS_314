@@ -1,0 +1,85 @@
+					F	D			E 			M	W
+irmovl	$3, %eax	-	rB = eax	valE = 0+3	-	R[rB] <- valE
+						F	D			E 			M	W
+irmovl	$10, %edx		-	rB = eax	valE = 0+10	-	R[rB] <- valE
+addl	%eax, %edx			F 	D 			E 			M 	W
+
+to populate eax we must hit the W (write-back) stage before we can use eax (it shows up in a D (decode) stage)
+
+if we do 1 nop neither eax or edx will be populated by the time addl needs them
+
+if we do 2 nop then eax will be populated for addl but edx will not be
+
+If we do 3 nop then both eax and edx will be populated when we need them
+
+
+
+y86 example of sort (w/o swap function)
+
+.pos 0
+Init:
+    irmovl Stack, %ebp
+    irmovl Stack, %esp
+    call Main
+    halt
+    
+.pos 0x104
+array:
+    .long 0x8
+    .long 0x2
+    .long 0x3
+    .long 0x1
+    .long 0x5
+    
+findMin: // int* findMin(int* arr, int length)
+    pushl %ebp
+    rrmovl %esp, %ebp
+    pushl %ebx
+    pushl %esi
+    
+    mrmovl 8(%ebp), %ecx    // pointer to start of array
+    mrmovl 12(%ebp), %edx   // populates length
+    
+    rrmovl %ecx, %eax
+    irmovl 4, %ebx
+    irmovl 1, %esi
+    subl %esi, %edx
+    
+    loop:       // DO NOT JUMP TO SWAP FROM IN HERE, IT WILL MESS UP regs
+        addl %ebx, %ecx
+        pushl %ecx
+        pushl %eax
+        mrmovl (%ecx), %ecx
+        mrmovl (%eax), %eax
+        subl %eax, %ecx     // ecx - eax
+        // want to update eax if ecx < eac
+        popl %ecx       // undoes ecx - eax
+        popl %eax
+        jge dontUpdate      // will jump over next line if(ecx < eax)
+        rrmovl %ecx, %eax   // saves ecx as new min
+        dontUpdate:
+            subl %esi, %edx
+            jg loop
+    
+    popl %esi
+    popl %ebx
+    popl %ebp
+    ret
+    
+Main:
+    pushl %ebp
+    rrmovl %esp, %ebp
+    
+    irmovl 5, %eax
+    pushl %eax
+    irmovl array, %eax
+    pushl %eax
+    call findMin
+    
+    rrmovl %ebp, %esp
+    popl %ebp
+    ret
+    
+    
+.pos 0x100
+Stack:

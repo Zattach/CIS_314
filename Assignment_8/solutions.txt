@@ -1,0 +1,8 @@
+1.A.
+	16 * 16 * 4 = 1024
+
+  B.
+  	896 misses, 128 hits
+
+  C.
+  	7 times out of 8 it misses

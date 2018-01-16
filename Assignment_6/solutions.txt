@@ -1,0 +1,21 @@
+Problem 2 
+
+The code should look like this without forwarding:
+
+addl %edx, %eax
+mrmovl 0(%ecx), %edx
+nop
+nop
+nop
+addl %edx, %eax
+
+There should be 3 nops as the first addl will have hit it's Write-back and the mrmovl will be hitting it's Write-back as the second addl hits it's decode
+
+The code should look like this with forwarding:
+
+addl %edx, %eax
+mrmovl 0(%ecx), %edx
+bubble
+addl %edx, %eax
+
+There should be 1 bubble as the first addl will have hit it's Write-back and the mrmovl will be hitting it's Write-back as the second addl hits it's decode

@@ -1,0 +1,118 @@
+
+
+scanf(" %c")
+
+typedef struct{
+	.
+	.
+	.
+}myStruct;
+
+
+myStruct* arr = malloc(...)
+
+
+
+1)
+void foo(int *a, int *b, int i, int n){
+	for (int j = 0; j < length(b); ++j){
+		a[i*n] += b[i*n + j];
+	}
+}
+
+why won't the compiler get rid of call to [function call]?
+why won't the compiler optimize out memory writes?
+How can we make it better?
+
+This would have side effects
+unrolling
+
+2)	**page 597-598
+consider 2048-byte direct mapped cache with 64-byte blocks operating on 32-bit addresses
+
+How many bits for block offset?
+for tag?
+for set?
+
+Fun:
+B = block size			64
+S = # sets				2048 / 64 = 32
+E = # lines (per set)	1
+m = address size		32
+
+Der:
+b = log(B)				6
+s = log(S)				5
+t = m - (b+s)			32 - 11 = 21
+
+3)	**page 597-598
+consider 32-byte direct mapped cache with 4-byte blocks operating on 8-bit addresses
+
+Fun:				Der:
+B = 4				b = 2
+S = 32 / 4 = 8		s = 3
+E = 1				t = 8 - 5 = 3
+m = 8
+
+ and access following in sequence
+
+0x04	miss
+0x06	hit
+0x10	miss
+0x24	miss
+0x06	miss
+0x26	miss
+
+4)	**page 408, 410, 414
+Describe the high-level functionality of each Y86 pipeline stage during the executiong of 
+
+xor	%ecx, %edx
+
+F:	icode : ifun
+	rA : rB
+D:	rA <- ecx
+	rB <- edx
+E:	valC = rA ^ rB
+M:	-
+W:	rB <- valC
+
+5)
+mrmovl 0(%eax) %ecx
+mrmovl 0(%ebx) %edx
+addl %ecx %edx
+
+How many stalls with/without forwarding?
+
+problems with ecx and edx used too recently after being called
+
+w/o forwarding	3
+F D E M W|
+  F D E M W|
+    bubble
+      bubble
+        bubble
+          F D E M W 	(Decode must come after Write-back)
+
+w/ forwarding	1
+F D E M|W
+  F D E M|W
+    bubble
+      F D E M W 	(Execution must come after memory)
+
+6)
+draw an XOR circuit using only AND, OR, and NOT gates
+
+(A||B)&&(!A||!B)
+
+R3)
+push ecx
+subl eax, ecx
+pop ecx
+jge .L1
+
+or
+
+push eax
+subl ecx, eax
+pop eax
+jle .L1

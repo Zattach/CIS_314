@@ -1,0 +1,62 @@
+1.A.
+	movl 8(%ebp), %esi	// get x
+	movl 12(%ebp), %ebx	// get n
+	movl $-1, %edi		// result = -1
+	movl $1, %edx		// mask = 1
+.L2: movl %edx, %eax	// get mask
+	andl %esi, %eax		// mask = mask & x
+	xorl %eax, %edi		// result = result ^ mask
+	movl %ebx, %ecx		// get n
+	shll %ecx, %edx		// mask = mask << n
+	cmpl $0, %edx		// compare mask and 0
+	jne .L2				// if != 0 goto loop
+	movl %edi, %eax		// return result
+
+  B.
+int loop(int x, int n) {
+	int result = -1
+	for (int mask = 1 ; mask != 0 ; mask = mask << n ) {
+		result ^= mask & x ;
+	}
+ 	return result;
+}
+
+2.A.
+.L3: movl (%ebx), %eax			// read *A[j][i]
+	movl (%esi,%ecx,4), %edx	// t = *A[i][j]
+	movl %eax, (%esi,%ecx,4)	// *A[i][j] = *A[j][i]
+	addl $1, %ecx				// j++
+	movl %edx, (%ebx)			// *A[j][i] = t
+	addl $52, %ebx				// A[j][i] += (4 * M)
+	cmpl %edi, %ecx				// compare j and i
+	jl .L3						// if (j < i) goto loop
+
+	B.
+	M = 13		// 52 = (13 * sizeof(int))
+
+3.
+_f:
+	pushl	%ebp				// opening to method
+	movl	%esp, %ebp			// opening to method
+	imull	$3, 8(%ebp), %eax	// 3 * x
+	popl	%ebp				// close method
+	retl						// close method
+_g:
+	pushl	%ebp				// opening to method
+	movl	%esp, %ebp			// opening to method
+	pushl	%edi				// clear stack
+	pushl	%esi				// clear stack
+	subl	$16, %esp			// shorten stack by 16
+	movl	12(%ebp), %edi		// read b
+	movl	8(%ebp), %eax		// read a
+	movl	%eax, (%esp)		// move a to call it
+	calll	_f					// goto f
+	movl	%eax, %esi			// read f(a)
+	movl	%edi, (%esp)		// move b to call it
+	calll	_f					// goto f
+	addl	%esi, %eax			// f(b) + f(a)
+	addl	$16, %esp			// increase stack
+	popl	%esi				// repopulate stack
+	popl	%edi				// repopulate stack
+	popl	%ebp				// close method/return
+	retl 						// close method/return

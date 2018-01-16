@@ -1,0 +1,2 @@
+3.
+	The first Byte is used to describe the icode or the action we will be taking. In this case C represents the code for add. The next Byte represents the ifun which would point to a function. The next 2 Bytes are for the registers we will use. Since we are adding a constant to rB the first Byte is F saying we use the val Bytes and rB is the location of the register we will save to. The last Bytes labeled by V are used to save the value V that we will add to rB. 

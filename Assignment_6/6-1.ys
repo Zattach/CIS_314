@@ -1,0 +1,114 @@
+.pos 0
+Init:
+    irmovl Stack, %ebp
+    irmovl Stack, %esp
+    call Main
+    halt
+    
+.pos 0x104
+array:
+    .long 0x8
+    .long 0x2
+    .long 0x3
+    .long 0x1
+    .long 0x5
+    .long 0x9
+    .long 0x4
+    .long 0x7
+    .long 0x6
+    .long 0x0
+    
+swap:
+   pushl %ebp
+   rrmovl %esp, %ebp
+   pushl %eax
+   pushl %ebx
+   pushl %ecx
+   pushl %edx
+
+   mrmovl 8(%ebp), %ecx
+   mrmovl 12(%ebp), %edx
+   mrmovl (%edx), %eax
+   mrmovl (%ecx), %ebx
+   rmmovl %eax, (%ecx)
+   rmmovl %ebx, (%edx)
+
+   popl %edx
+   popl %ecx
+   popl %ebx
+   popl %eax
+   popl %ebp
+   ret 
+    
+findMin: // int* findMin(int* arr, int length)
+    pushl %ebp
+    rrmovl %esp, %ebp
+    pushl %ebx
+    pushl %esi
+    
+    mrmovl 8(%ebp), %edx    // populates length
+    mrmovl 12(%ebp), %ecx   // pointer to start of array
+    
+    rrmovl %ecx, %edi       // saves start of array for later
+    rrmovl %ecx, %eax
+    irmovl 4, %ebx
+    irmovl 1, %esi
+    subl %esi, %edx
+    
+    loop:       // DO NOT JUMP TO SWAP FROM IN HERE, IT WILL MESS UP regs
+        addl %ebx, %ecx
+        pushl %ecx
+        pushl %eax
+        mrmovl (%ecx), %ecx
+        mrmovl (%eax), %eax
+        subl %eax, %ecx     // ecx - eax
+        // want to update eax if ecx < eac
+        popl %eax       // undoes ecx - eax
+        popl %ecx
+        jge dontUpdate      // will jump over next line if(ecx < eax)
+        rrmovl %ecx, %eax   // saves ecx as new min
+        dontUpdate:
+            subl %esi, %edx
+            jg loop
+            
+    pushl %edi
+    pushl %eax
+    call swap
+    popl %eax
+    popl %edi
+    
+    popl %esi
+    popl %ebx
+    popl %ebp
+    ret
+    
+Main:
+    pushl %ebp
+    rrmovl %esp, %ebp
+    
+    irmovl array, %ecx
+    irmovl 10, %edx
+    irmovl 4, %ebx
+    irmovl 1, %esi
+    
+    loopMain:
+        pushl %ebx
+        pushl %esi
+        pushl %ecx
+        pushl %edx
+        call findMin
+        popl %edx
+        popl %ecx
+        popl %esi
+        popl %ebx
+        addl %ebx, %ecx
+        subl %esi, %edx
+        jg loopMain
+    
+    rrmovl %ebp, %esp
+    popl %ebp
+    ret
+    
+    
+.pos 0x100
+Stack:

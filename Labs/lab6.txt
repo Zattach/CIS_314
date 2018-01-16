@@ -1,0 +1,106 @@
+
+//Y86 code: can be entered in Y86 simulator:
+// https://xsznix.github.io/js-y86/
+
+.pos 0
+Init:
+	irmovl Stack, %ebp
+	irmovl Stack, %esp
+	call Main
+	halt
+
+    .pos 0x104	//defines pointer location of array
+    .align 4
+array:	// creates array pointer 
+    .long 0x001
+    .long 0x002
+    .long 0x003
+    .long 0x004
+    .long 0x005
+
+add: //int add(int a, int b)
+    pushl %ebp
+    rrmovl %esp, %ebp
+    
+    mrmovl 8(%ebp), %eax
+    mrmovl 12(%ebp), %ecx
+    addl %ecx, %eax
+    
+    popl %ebp
+    ret
+
+/*
+add: //int add(int* a, int* b)
+    pushl %ebp
+    rrmovl %esp, %ebp
+    
+    mrmovl 8(%ebp), %eax
+    mrmovl (%eax), %eax     // small change to account for pointers
+    mrmovl 12(%ebp), %ecx
+    mrmovl (%ecx), %ecx
+    addl %ecx, %eax
+    
+    popl %ebp
+    ret
+*/
+
+mult: //int mult(int a, int b)
+    pushl %ebp
+    rrmovl %esp, %ebp
+    pushl %ebx
+    mrmovl 8(%ebp), %eax
+    rrmovl %eax, %edx
+    mrmovl 12(%ebp), %ecx
+    irmovl $1, %ebx
+    subl %ebx, %ecx
+    je end
+    
+    loop:
+        addl %edx, %eax
+        subl %ebx, %ecx
+        jg loop
+    
+    end:
+    popl %ebx
+    popl %ebp
+    ret
+
+Main:
+	pushl %ebp
+	rrmovl %esp, %ebp
+
+    irmovl $2, %eax		// push last argument first, push first argument last
+    pushl %eax
+    irmovl $3, %eax
+    pushl %eax
+    call add // or call mult
+
+    rrmovl %ebp, %esp	// resets stack pointer to counteract pushl messing with the stack
+
+	popl %ebp
+	ret
+
+/*
+Main:
+    pushl %ebp
+    rrmovl %esp, %ebp
+    pushl %ebx
+    
+    irmovl array, %eax
+    pushl %eax
+    irmovl $4, %ebx     //add 4 to pointer of array
+    addl %ebx, %eax
+    pushl %eax
+    call add
+    
+    // i want to add 4 to eax
+    
+    popl %ebx
+    rrmovl %ebp, %esp
+    
+    popl %ebp
+    ret
+*/
+
+.pos 0x100	//defines pointer location of Stack
+Stack:
